@@ -134,7 +134,7 @@ angular.module('monospaced.qrcode', [])
                   return;
                 }
               } else {
-                domElement.innerHTML = qr.createImgTag(tile, 0);
+                domElement.innerHTML = qr.createSvgTag(tile, 0);
                 $img = element.find('img');
                 $img.addClass('qrcode');
 
