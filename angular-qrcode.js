@@ -12,35 +12,16 @@ if (typeof module !== 'undefined' &&
 
 angular.module('monospaced.qrcode', [])
   .directive('qrcode', ['$window', function($window) {
-
-    var canvas2D = !!$window.CanvasRenderingContext2D,
-        levels = {
-          'L': 'Low',
-          'M': 'Medium',
-          'Q': 'Quartile',
-          'H': 'High'
-        },
-        draw = function(context, qr, modules, tile, color) {
-          for (var row = 0; row < modules; row++) {
-            for (var col = 0; col < modules; col++) {
-              var w = (Math.ceil((col + 1) * tile) - Math.floor(col * tile)),
-                  h = (Math.ceil((row + 1) * tile) - Math.floor(row * tile));
-
-              context.fillStyle = qr.isDark(row, col) ? color.foreground : color.background;
-              context.fillRect(Math.round(col * tile),
-                               Math.round(row * tile), w, h);
-            }
-          }
-        };
-
+    var levels = {
+        'L': 'Low',
+        'M': 'Medium',
+        'Q': 'Quartile',
+        'H': 'High'
+      };
     return {
       restrict: 'E',
-      template: '<canvas class="qrcode"></canvas>',
       link: function(scope, element, attrs) {
         var domElement = element[0],
-            $canvas = element.find('canvas'),
-            canvas = $canvas[0],
-            context = canvas2D ? canvas.getContext('2d') : null,
             download = 'download' in attrs,
             href = attrs.href,
             link = download || href ? document.createElement('a') : '',
@@ -63,6 +44,7 @@ angular.module('monospaced.qrcode', [])
             },
             setBackground = function(value) {
               color.background = value || color.background;
+              scope.qrBackgroundColor = color.background;
             },
             setVersion = function(value) {
               version = Math.max(1, Math.min(parseInt(value, 10), 40)) || 5;
@@ -99,7 +81,6 @@ angular.module('monospaced.qrcode', [])
             setSize = function(value) {
               size = parseInt(value, 10) || modules * 2;
               tile = size / modules;
-              canvas.width = canvas.height = size;
             },
             render = function() {
               if (!qr) {
@@ -112,11 +93,9 @@ angular.module('monospaced.qrcode', [])
                   link.title = '';
                   link.href = '#_';
                 }
-                if (!canvas2D) {
-                  domElement.innerHTML = '<img src width="' + size + '"' +
-                                         'height="' + size + '"' +
-                                         'class="qrcode">';
-                }
+                domElement.innerHTML = '<img src width="' + size + '"' +
+                                       'height="' + size + '"' +
+                                       'class="qrcode">';
                 scope.$emit('qrcode:error', error);
                 return;
               }
@@ -126,22 +105,14 @@ angular.module('monospaced.qrcode', [])
                 domElement.title = 'Download QR code';
               }
 
-              if (canvas2D) {
-                draw(context, qr, modules, tile, color);
+              domElement.innerHTML = qr.createSvgTag(tile, 0);
+              $img = element.find('svg');
+              $img.css({'background': color.background, 'padding': '1mm', 'box-sizing': 'content-box'});
+              $img.addClass('qrcode');
 
-                if (download) {
-                  domElement.href = canvas.toDataURL('image/png');
-                  return;
-                }
-              } else {
-                domElement.innerHTML = qr.createSvgTag(tile, 0);
-                $img = element.find('img');
-                $img.addClass('qrcode');
-
-                if (download) {
-                  domElement.href = $img[0].src;
-                  return;
-                }
+              if (download) {
+                domElement.href = $img[0].src;
+                return;
               }
 
               if (href) {
@@ -151,7 +122,7 @@ angular.module('monospaced.qrcode', [])
 
         if (link) {
           link.className = 'qrcode-link';
-          $canvas.wrap(link);
+          $img.wrap(link);
           domElement = domElement.firstChild;
         }
 
