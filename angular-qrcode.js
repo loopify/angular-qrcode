@@ -44,7 +44,6 @@ angular.module('monospaced.qrcode', [])
             },
             setBackground = function(value) {
               color.background = value || color.background;
-              scope.qrBackgroundColor = color.background;
             },
             setVersion = function(value) {
               version = Math.max(1, Math.min(parseInt(value, 10), 40)) || 5;
