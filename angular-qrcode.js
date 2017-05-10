@@ -119,11 +119,11 @@ angular.module('monospaced.qrcode', [])
               }
             };
 
-        if (link) {
-          link.className = 'qrcode-link';
-          $img.wrap(link);
-          domElement = domElement.firstChild;
-        }
+//         if (link) { // Causes renderer issue with compiling!!!
+//           link.className = 'qrcode-link';
+//           $img.wrap(link);
+//           domElement = domElement.firstChild;
+//         }
 
         setColor(attrs.color);
         setBackground(attrs.background);
